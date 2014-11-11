@@ -158,15 +158,15 @@ function(add_precompiled_header _target _input)
     get_filename_component(_name ${_input} NAME)
     set(_pch_header "${CMAKE_CURRENT_SOURCE_DIR}/${_input}")
     set(_pch_binary_dir "${CMAKE_CURRENT_BINARY_DIR}/${_target}_pch")
-    set(_pchfile "${_pch_binary_dir}/${_input}")
+    set(_pchfile "${_pch_binary_dir}/${_name}")
     set(_outdir "${CMAKE_CURRENT_BINARY_DIR}/${_target}_pch/${_name}.gch")
     make_directory(${_outdir})
     set(_output_cxx "${_outdir}/.c++")
     set(_output_c "${_outdir}/.c")
 
     set(_pch_flags_file "${_pch_binary_dir}/compile_flags.rsp")
-    export_all_flags("${_pch_flags_file}")
-    set(_compiler_FLAGS "@${_pch_flags_file}")
+    #export_all_flags("${_pch_flags_file}")
+    #set(_compiler_FLAGS "@${_pch_flags_file}")
     add_custom_command(
       OUTPUT "${_pchfile}"
       COMMAND "${CMAKE_COMMAND}" -E copy "${_pch_header}" "${_pchfile}"
@@ -174,13 +174,13 @@ function(add_precompiled_header _target _input)
       COMMENT "Updating ${_name}")
     add_custom_command(
       OUTPUT "${_output_cxx}"
-      COMMAND "${CMAKE_CXX_COMPILER}" ${_compiler_FLAGS} -x c++-header -o "${_output_cxx}" "${_pchfile}"
-      DEPENDS "${_pchfile}" "${_pch_flags_file}"
+      COMMAND "${CMAKE_CXX_COMPILER}" $(CXX_DEFINES) $(CXX_FLAGS) -x c++-header -o "${_output_cxx}" "${_pchfile}"
+      DEPENDS "${_pchfile}" 
       COMMENT "Precompiling ${_name} for ${_target} (C++)")
     add_custom_command(
       OUTPUT "${_output_c}"
-      COMMAND "${CMAKE_C_COMPILER}" ${_compiler_FLAGS} -x c-header -o "${_output_c}" "${_pchfile}"
-      DEPENDS "${_pchfile}" "${_pch_flags_file}"
+      COMMAND "${CMAKE_C_COMPILER}" $(C_DEFINES) $(C_FLAGS) -x c-header -o "${_output_c}" "${_pchfile}"
+      DEPENDS "${_pchfile}"
       COMMENT "Precompiling ${_name} for ${_target} (C)")
 
     get_property(_sources TARGET ${_target} PROPERTY SOURCES)
@@ -212,7 +212,7 @@ function(add_precompiled_header _target _input)
 	endif()
 
 	combine_arguments(_pch_compile_flags)
-	message("${_source}" ${_pch_compile_flags})
+	#message("${_source}" ${_pch_compile_flags})
 	set_source_files_properties(${_source} PROPERTIES
 	  COMPILE_FLAGS "${_pch_compile_flags}"
 	  OBJECT_DEPENDS "${_object_depends}")
