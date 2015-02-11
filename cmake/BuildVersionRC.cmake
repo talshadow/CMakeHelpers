@@ -5,9 +5,10 @@ macro (createResourcesVersion ProductName
 							  CompanyName
 							  Comment)
 if(WIN32)
+	set(ResourseName ${ProjectName}_RC)
 	set (${ResourseName} "${CMAKE_CURRENT_BINARY_DIR}/${ProjectName}_ver.rc")
 	string(TIMESTAMP CURRENT_YEAR "%Y" UTC)
-	file(WRITE ${${ResourseName}} "
+	file( WRITE ${${ResourseName}} "
 \#include \"winresrc.h\"
 \#ifdef _WIN32
 LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
@@ -36,7 +37,7 @@ BEGIN
             VALUE \"LegalCopyright\", \"Copyright ${CompanyName} (C) ${CURRENT_YEAR}\"
             VALUE \"OriginalFilename\", \"${ProjectName}\"
             VALUE \"ProductName\",    \"${ProductName}\"
-            VALUE \"ProductVersion\", \"${${ProductName}_VERSION}\"
+            VALUE \"ProductVersion\", \"${${ProductName}_VERSION_MAJOR}.${${ProductName}_VERSION_MINOR}.${${ProductName}_VERSION_PATCH}\"
             VALUE \"SpecialBuild\",\"${CMAKE_BUILD_TYPE} ${ProjectName}_VERSION_PATCH\"
         END
     END
@@ -45,6 +46,6 @@ BEGIN
         VALUE \"Translation\", 0x419, 1200
     END
 END
-")	
+" )	
 endif(WIN32)
 endmacro(createResourcesVersion)
