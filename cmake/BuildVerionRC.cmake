@@ -1,21 +1,20 @@
-#macro (createResourcesVersion ResourseName ComponentName ProductName Comment)
 macro (createResourcesVersion ProductName
-							  ProjectName
-							  ComponentName
-							  CompanyName
-							  Comment)
+                              ProjectName
+                              ComponentName
+                              CompanyName
+                              Comment)
 if(WIN32)
-	set (${ResourseName} "${CMAKE_CURRENT_BINARY_DIR}/${ProjectName}_ver.rc")
+  set (ResourseName "${CMAKE_CURRENT_BINARY_DIR}/${ProjectName}_ver.rc")
 	string(TIMESTAMP CURRENT_YEAR "%Y" UTC)
-	file(WRITE ${${ResourseName}} "
+  file(WRITE ${ResourseName} "
 \#include \"winresrc.h\"
 \#ifdef _WIN32
 LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
 \#pragma code_page(1251)
 \#endif //_WIN32
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION ${${ProjectName}_VERSION_MAJOR},${${ProjectName}_VERSION_MINOR},${${ProjectName}_VERSION_PATCH},${${ProjectName}_VERSION_TWEAK}
- PRODUCTVERSION ${${ProductName}_VERSION_MAJOR},${${ProductName}_VERSION_MINOR},${${ProductName}_VERSION_PATCH},${${ProductName}_VERSION_TWEAK}
+ FILEVERSION ${${ProjectName}_Major},${${ProjectName}_Minor},${${ProjectName}_Build},0
+ PRODUCTVERSION ${${ProductName}_Major},${${ProductName}_Minor},${${ProductName}_Build},0
 \#ifdef _DEBUG
  FILEFLAGS 0x1L
 \#else
@@ -31,13 +30,13 @@ BEGIN
         BEGIN
             VALUE \"Comments\", \"${Comment}\"
             VALUE \"CompanyName\", \"${CompanyName}\"
-            VALUE \"FileVersion\", \"${${ProjectName}_VERSION_MAJOR}.${${ProjectName}_VERSION_MINOR}.${${ProjectName}_VERSION_PATCH}\"
+            VALUE \"FileVersion\", \"${${ProjectName}_Major}.${${ProjectName}_Minor}.${${ProjectName}_Build}\"
             VALUE \"InternalName\", \"${ProjectName}\"
             VALUE \"LegalCopyright\", \"Copyright ${CompanyName} (C) ${CURRENT_YEAR}\"
             VALUE \"OriginalFilename\", \"${ProjectName}\"
             VALUE \"ProductName\",    \"${ProductName}\"
-            VALUE \"ProductVersion\", \"${${ProductName}_VERSION}\"
-            VALUE \"SpecialBuild\",\"${CMAKE_BUILD_TYPE} ${ProjectName}_VERSION_PATCH\"
+            VALUE \"ProductVersion\", \"${${ProductName}_Major}.${${ProductName}_Minor}.${${ProductName}_Build}\"
+            VALUE \"SpecialBuild\",\"${CMAKE_BUILD_TYPE} ${${ProjectName}_Build}\"
         END
     END
     BLOCK \"VarFileInfo\"
