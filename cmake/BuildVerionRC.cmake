@@ -4,7 +4,7 @@ macro (createResourcesVersion ProductName
                               CompanyName
                               Comment)
 if(WIN32)
-  set (ResourseName "${CMAKE_CURRENT_BINARY_DIR}/${ProjectName}_ver.rc")
+  set (ResourseName "${${PROJECT_NAME}_BINARY_DIR}/${ProjectName}_ver.rc")
 	string(TIMESTAMP CURRENT_YEAR "%Y" UTC)
   file(WRITE ${ResourseName} "
 \#include \"winresrc.h\"
