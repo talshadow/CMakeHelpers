@@ -87,71 +87,53 @@ function(add_precompiled_header _target _input)
   endif()
 
   if(MSVC)
-
-    set(_cxx_path "${CMAKE_CFG_INTDIR}/${_target}_cxx_pch")
-    set(_c_path "${CMAKE_CFG_INTDIR}/${_target}_c_pch")
-    make_directory("${_cxx_path}")
-    make_directory("${_c_path}")
-    set(_pch_cxx_header "${_cxx_path}/${_input}")
-    set(_pch_cxx_pch "${_cxx_path}/${_input_we}.pch")
-    set(_pch_c_header "${_c_path}/${_input}")
-    set(_pch_c_pch "${_c_path}/${_input_we}.pch")
-
-    get_target_property(sources ${_target} SOURCES)
-    foreach(_source ${sources})
-      set(_pch_compile_flags "")
-      if(_source MATCHES \\.\(cc|cxx|cpp|c\)$)
-	if(_source MATCHES \\.\(cpp|cxx|cc\)$)
-	  set(_pch_header "${_input}")
-	  set(_pch "${_pch_cxx_pch}")
+	
+	set(output_pch_path ${${_target}_BINARY_DIR} )
+	set(output_pch_name ${output_pch_path}/${_input_we}.pch)
+	
+	get_target_property(sources ${_target} SOURCES)
+	set(_outVar "")
+	foreach(_ext .cpp .cxx .c .cc)
+		set(outPos "")
+		list(FIND sources ${_input_we}${_ext} outPos)
+		if(NOT ${outPos} EQUAL -1)
+			list(GET sources ${outPos} outPos)
+			list(APPEND _outVar ${outPos})
+		endif(NOT ${outPos} EQUAL -1)
+	endforeach(_ext .cpp .cxx .c .cc)
+	
+	list(LENGTH _outVar find_length)
+	
+	if(find_length GREATER 1)
+		message(FATAL_ERROR "Not determinate usage sources for precompile between " ${_outVar})
+	endif(find_length GREATER 1)
+	
+	if(find_length LESS 1)
+		set(_pch_source ${output_pch_path}/${_input_we}.cpp)
+		if(NOT EXISTS {_pch_source})
+			file(WRITE ${_pch_source} "#include \"${_input}\"")
+		endif(NOT EXISTS {_pch_source})	
+		target_sources(${_target} PRIVATE ${_pch_source})
 	else()
-	  set(_pch_header "${_input}")
-	  set(_pch "${_pch_c_pch}")
+		list(GET _outVar 0 _pch_source)
+		list(REMOVE_ITEM sources  ${_pch_source})
 	endif()
-
-	if(_source STREQUAL "${_PCH_SOURCE_CXX}")
-	  set(_pch_compile_flags "${_pch_compile_flags} \"/Fp${_pch_cxx_pch}\" /Yc${_input}")
-	  set(_pch_source_cxx_found TRUE)
-	elseif(_source STREQUAL "${_PCH_SOURCE_C}")
-	  set(_pch_compile_flags "${_pch_compile_flags} \"/Fp${_pch_c_pch}\" /Yc${_input}")
-	  set(_pch_source_c_found TRUE)
-	else()
-	  if(_source MATCHES \\.\(cpp|cxx|cc\)$)
-	    set(_pch_compile_flags "${_pch_compile_flags} \"/Fp${_pch_cxx_pch}\" /Yu${_input}")
-	    set(_pch_source_cxx_needed TRUE)
-	  else()
-	    set(_pch_compile_flags "${_pch_compile_flags} \"/Fp${_pch_c_pch}\" /Yu${_input}")
-	    set(_pch_source_c_needed TRUE)
-	  endif()
-	  if(_PCH_FORCEINCLUDE)
-	    set(_pch_compile_flags "${_pch_compile_flags} /FI${_input}")
-	  endif(_PCH_FORCEINCLUDE)
-	endif()
-
-	get_source_file_property(_object_depends "${_source}" OBJECT_DEPENDS)
-	if(NOT _object_depends)
-	  set(_object_depends)
-	endif()
+	
 	if(_PCH_FORCEINCLUDE)
-	  if(_source MATCHES \\.\(cc|cxx|cpp\)$)
-	    list(APPEND _object_depends "${_pch_header}")
-	  else()
-	    list(APPEND _object_depends "${_pch_header}")
-	  endif()
-	endif()
-
-	set_source_files_properties(${_source} PROPERTIES
-	  COMPILE_FLAGS "${_pch_compile_flags}"
-	  OBJECT_DEPENDS "${_object_depends}")
-      endif()
-    endforeach()
-
-    if(_pch_source_cxx_needed AND NOT _pch_source_cxx_found)
-      message(FATAL_ERROR "A source file ${_PCH_SOURCE_CXX} for ${_input} is required for MSVC builds. Can be set with the SOURCE_CXX option.")
-    endif()
-    if(_pch_source_c_needed AND NOT _pch_source_c_found)
-      message(FATAL_ERROR "A source file ${_PCH_SOURCE_C} for ${_input} is required for MSVC builds. Can be set with the SOURCE_C option.")
-    endif()
+		set(force_include_header "/FI${_input}")
+	else(_PCH_FORCEINCLUDE)
+		set(force_include_header "")
+	endif(_PCH_FORCEINCLUDE)
+	
+	
+	set_source_files_properties( ${sources} PROPERTIES
+            COMPILE_FLAGS "/Yu${_input} \"/Fp${output_pch_name}\" ${force_include_header}"
+            OBJECT_DEPENDS "${output_pch_name}" )
+    
+	set_source_files_properties( ${_pch_source} PROPERTIES
+            COMPILE_FLAGS "/Yc${_input} \"/Fp${output_pch_name}\""
+            OBJECT_OUTPUTS "${output_pch_name}"
+            OBJECT_DEPENDS "" )
   endif(MSVC)
 
   if(CMAKE_COMPILER_IS_GNUCXX)
