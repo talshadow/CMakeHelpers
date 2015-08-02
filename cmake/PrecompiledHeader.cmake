@@ -31,7 +31,7 @@
 # License:
 #
 # Copyright (C) 2009-2013 Lars Christensen <larsch@belunktum.dk>
-#
+# Modify and support by TAL_Shadow <talshadow@gmail.com>
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
 # (the 'Software') deal in the Software without restriction,
